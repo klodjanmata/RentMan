@@ -1,0 +1,118 @@
+### Create a new reservation
+POST http://localhost:8080/api/reservations
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "vehicleId": 1,
+  "startDate": "2024-10-01",
+  "endDate": "2024-10-05",
+  "pickupLocation": "Main Office - 123 Downtown Ave",
+  "returnLocation": "Main Office - 123 Downtown Ave",
+  "pickupTime": "2024-10-01T09:00:00",
+  "returnTime": "2024-10-05T17:00:00",
+  "specialRequests": "Please have the car cleaned before pickup",
+  "insuranceIncluded": true,
+  "additionalDriver": false,
+  "gpsIncluded": true,
+  "childSeatIncluded": false
+}
+
+### Create reservation with all extras
+POST http://localhost:8080/api/reservations
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "vehicleId": 1,
+  "startDate": "2024-11-01",
+  "endDate": "2024-11-07",
+  "pickupLocation": "Airport Terminal 1",
+  "returnLocation": "Airport Terminal 1",
+  "specialRequests": "Business trip rental - need premium service",
+  "insuranceIncluded": true,
+  "additionalDriver": true,
+  "gpsIncluded": true,
+  "childSeatIncluded": true
+}
+
+### Get all reservations
+GET http://localhost:8080/api/reservations
+
+### Get reservation by ID
+GET http://localhost:8080/api/reservations/1
+
+### Get reservation by reservation number
+GET http://localhost:8080/api/reservations/number/RES1725743325389
+
+### Get customer's reservations
+GET http://localhost:8080/api/reservations/customer/1
+
+### Get vehicle's reservations
+GET http://localhost:8080/api/reservations/vehicle/1
+
+### Get reservations by status
+GET http://localhost:8080/api/reservations/status/PENDING
+
+### Get confirmed reservations
+GET http://localhost:8080/api/reservations/status/CONFIRMED
+
+### Get completed reservations
+GET http://localhost:8080/api/reservations/status/COMPLETED
+
+### Get current active reservations
+GET http://localhost:8080/api/reservations/active
+
+### Get upcoming reservations
+GET http://localhost:8080/api/reservations/upcoming
+
+### Get overdue reservations
+GET http://localhost:8080/api/reservations/overdue
+
+### Get today's pickups
+GET http://localhost:8080/api/reservations/today/pickups
+
+### Get today's returns
+GET http://localhost:8080/api/reservations/today/returns
+
+### Check vehicle availability
+GET http://localhost:8080/api/reservations/availability?vehicleId=1&startDate=2024-10-15&endDate=2024-10-20
+
+### Check vehicle availability (conflicting dates)
+GET http://localhost:8080/api/reservations/availability?vehicleId=1&startDate=2024-10-02&endDate=2024-10-04
+
+### Confirm reservation
+PATCH http://localhost:8080/api/reservations/1/confirm?employeeId=2
+
+### Start reservation (vehicle pickup)
+PATCH http://localhost:8080/api/reservations/1/start?pickupMileage=25000&fuelLevel=Full&vehicleCondition=Excellent condition, no damages&employeeId=2
+
+### Complete reservation (vehicle return)
+PATCH http://localhost:8080/api/reservations/1/complete?returnMileage=25350&fuelLevel=Half&vehicleCondition=Good condition, minor scratch on rear bumper&additionalFees=50.00&notes=Late return fee applied&employeeId=2
+
+### Cancel reservation
+PATCH http://localhost:8080/api/reservations/1/cancel?cancellationReason=Customer requested cancellation due to travel change
+
+### Update reservation
+PUT http://localhost:8080/api/reservations/1
+Content-Type: application/json
+
+{
+  "startDate": "2024-10-02",
+  "endDate": "2024-10-06",
+  "pickupLocation": "Updated Location - Downtown Branch",
+  "returnLocation": "Updated Location - Downtown Branch",
+  "pickupTime": "2024-10-02T10:00:00",
+  "returnTime": "2024-10-06T16:00:00",
+  "specialRequests": "Updated special request - VIP service",
+  "insuranceIncluded": true,
+  "additionalDriver": true,
+  "gpsIncluded": true,
+  "childSeatIncluded": false
+}
+
+### Delete reservation (only pending)
+DELETE http://localhost:8080/api/reservations/1
+
+### Get reservation statistics
+GET http://localhost:8080/api/reservations

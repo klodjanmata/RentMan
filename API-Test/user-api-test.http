@@ -1,0 +1,117 @@
+### Register a new customer
+POST http://localhost:8080/api/users/register
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "password123",
+  "phoneNumber": "+1234567890",
+  "dateOfBirth": "1990-05-15",
+  "driverLicenseNumber": "DL123456789",
+  "licenseExpiryDate": "2025-05-15",
+  "streetAddress": "123 Main Street",
+  "city": "New York",
+  "state": "NY",
+  "postalCode": "10001",
+  "country": "USA",
+  "role": "CUSTOMER"
+}
+
+### Register an employee
+POST http://localhost:8080/api/users/register
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane.smith@rentman.com",
+  "password": "employee123",
+  "phoneNumber": "+1987654321",
+  "dateOfBirth": "1985-08-20",
+  "role": "EMPLOYEE",
+  "employeeId": "EMP001",
+  "department": "Operations",
+  "hireDate": "2024-01-15"
+}
+
+### Register an admin
+POST http://localhost:8080/api/users/register
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "User",
+  "email": "admin@rentman.com",
+  "password": "admin123",
+  "phoneNumber": "+1122334455",
+  "role": "ADMIN",
+  "employeeId": "ADM001",
+  "department": "Management",
+  "hireDate": "2023-06-01"
+}
+
+### Login user
+POST http://localhost:8080/api/users/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "password123"
+}
+
+### Get all users
+GET http://localhost:8080/api/users
+
+### Get user by ID
+GET http://localhost:8080/api/users/1
+
+### Get all customers
+GET http://localhost:8080/api/users/customers
+
+### Get all employees
+GET http://localhost:8080/api/users/employees
+
+### Get all admins
+GET http://localhost:8080/api/users/admins
+
+### Get users by role
+GET http://localhost:8080/api/users/role/CUSTOMER
+
+### Search users by name
+GET http://localhost:8080/api/users/search?name=John
+
+### Get user statistics
+GET http://localhost:8080/api/users/statistics
+
+### Update user status
+PATCH http://localhost:8080/api/users/1/status?status=ACTIVE
+
+### Update user profile
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe Updated",
+  "phoneNumber": "+1234567890",
+  "dateOfBirth": "1990-05-15",
+  "streetAddress": "456 Updated Street",
+  "city": "New York",
+  "state": "NY",
+  "postalCode": "10002",
+  "country": "USA",
+  "preferredLanguage": "en",
+  "emailNotifications": true,
+  "smsNotifications": true
+}
+
+### Verify user email
+PATCH http://localhost:8080/api/users/1/verify-email
+
+### Verify user phone
+PATCH http://localhost:8080/api/users/1/verify-phone
+
+### Delete user (be careful!)
+DELETE http://localhost:8080/api/users/1

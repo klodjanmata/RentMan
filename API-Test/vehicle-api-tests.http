@@ -1,0 +1,26 @@
+### Get all vehicles
+GET http://localhost:8080/api/vehicles
+
+### Get available vehicles
+GET http://localhost:8080/api/vehicles/available
+
+### Create a new vehicle
+POST http://localhost:8080/api/vehicles
+Content-Type: application/json
+
+{
+  "make": "Toyota",
+  "model": "Camry",
+  "year": 2023,
+  "licensePlate": "ABC123",
+  "type": "CAR",
+  "dailyRate": 45.00,
+  "fuelType": "Hybrid",
+  "transmission": "Automatic",
+  "seatingCapacity": 5,
+  "color": "Silver",
+  "description": "Comfortable sedan perfect for business trips"
+}
+
+### Get vehicle by type
+GET http://localhost:8080/api/vehicles/type/CAR

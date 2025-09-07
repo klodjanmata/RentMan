@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: rentman-sqlserver
+    environment:
+      SA_PASSWORD: "sa2005!!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - rentman-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: rentman-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - rentman-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  rentman-network:
+    driver: bridge
