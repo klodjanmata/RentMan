@@ -77,4 +77,68 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Find recent customers (last 30 days)
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.createdAt >= :thirtyDaysAgo ORDER BY u.createdAt DESC")
     List<User> findRecentCustomers(@Param("role") User.UserRole role, @Param("thirtyDaysAgo") LocalDateTime thirtyDaysAgo);
+
+    // Find users by company
+    List<User> findByCompanyIdOrderByCreatedAtDesc(Long companyId);
+
+    // Find users by company and role
+    List<User> findByCompanyIdAndRoleOrderByCreatedAtDesc(Long companyId, User.UserRole role);
+
+    // Find users by company and status
+    List<User> findByCompanyIdAndStatusOrderByCreatedAtDesc(Long companyId, User.UserStatus status);
+
+    // Find employees by company and department
+    List<User> findByCompanyIdAndRoleAndDepartment(Long companyId, User.UserRole role, String department);
+
+    // Find company admins
+    List<User> findByRoleAndCompanyIdIsNotNull(User.UserRole role);
+
+    // Find company admins by company
+    List<User> findByRoleAndCompanyId(User.UserRole role, Long companyId);
+
+    // Find users with specific permissions
+    List<User> findByCanManageFleetTrue();
+
+    List<User> findByCanManageReservationsTrue();
+
+    List<User> findByCanManageEmployeesTrue();
+
+    List<User> findByCanViewReportsTrue();
+
+    List<User> findByCanManageFinancesTrue();
+
+    // Find users by company with specific permissions
+    List<User> findByCompanyIdAndCanManageFleetTrue(Long companyId);
+
+    List<User> findByCompanyIdAndCanManageReservationsTrue(Long companyId);
+
+    List<User> findByCompanyIdAndCanManageEmployeesTrue(Long companyId);
+
+    List<User> findByCompanyIdAndCanViewReportsTrue(Long companyId);
+
+    List<User> findByCompanyIdAndCanManageFinancesTrue(Long companyId);
+
+    // Count users by company
+    long countByCompanyId(Long companyId);
+
+    // Count users by company and role
+    long countByCompanyIdAndRole(Long companyId, User.UserRole role);
+
+    // Count users by company and status
+    long countByCompanyIdAndStatus(Long companyId, User.UserStatus status);
+
+    // Get user statistics by company
+    @Query("SELECT " +
+           "COUNT(u) as totalUsers, " +
+           "COUNT(CASE WHEN u.role = 'EMPLOYEE' THEN 1 END) as employees, " +
+           "COUNT(CASE WHEN u.role = 'COMPANY_ADMIN' THEN 1 END) as companyAdmins, " +
+           "COUNT(CASE WHEN u.status = 'ACTIVE' THEN 1 END) as activeUsers " +
+           "FROM User u WHERE u.company.id = :companyId")
+    Object[] getUserStatisticsByCompany(@Param("companyId") Long companyId);
+
+    // Find users created in date range by company
+    @Query("SELECT u FROM User u WHERE u.company.id = :companyId AND u.createdAt BETWEEN :startDate AND :endDate")
+    List<User> findUsersByCompanyAndCreatedDateRange(@Param("companyId") Long companyId, 
+                                                   @Param("startDate") LocalDateTime startDate, 
+                                                   @Param("endDate") LocalDateTime endDate);
 }

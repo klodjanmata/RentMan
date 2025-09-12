@@ -133,4 +133,119 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     // Find reservations handled by employee
     List<Reservation> findByHandledByEmployeeOrderByCreatedAtDesc(User employee);
+
+    // Find reservations by company
+    List<Reservation> findByCompanyIdOrderByCreatedAtDesc(Long companyId);
+
+    // Find reservations by company and status
+    List<Reservation> findByCompanyIdAndStatusOrderByCreatedAtDesc(Long companyId, Reservation.ReservationStatus status);
+
+    // Find reservations by company and date range
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.startDate BETWEEN :startDate AND :endDate")
+    List<Reservation> findReservationsByCompanyAndDateRange(@Param("companyId") Long companyId, 
+                                                          @Param("startDate") LocalDate startDate, 
+                                                          @Param("endDate") LocalDate endDate);
+
+    // Find current active reservations by company
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.status IN ('CONFIRMED', 'IN_PROGRESS') " +
+           "AND r.startDate <= :today AND r.endDate >= :today")
+    List<Reservation> findCurrentActiveReservationsByCompany(@Param("companyId") Long companyId, @Param("today") LocalDate today);
+
+    // Find upcoming reservations by company
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.status = 'CONFIRMED' " +
+           "AND r.startDate BETWEEN :today AND :nextWeek ORDER BY r.startDate ASC")
+    List<Reservation> findUpcomingReservationsByCompany(@Param("companyId") Long companyId, 
+                                                      @Param("today") LocalDate today,
+                                                      @Param("nextWeek") LocalDate nextWeek);
+
+    // Find overdue reservations by company
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.endDate < :today " +
+           "AND r.status IN ('CONFIRMED', 'IN_PROGRESS')")
+    List<Reservation> findOverdueReservationsByCompany(@Param("companyId") Long companyId, @Param("today") LocalDate today);
+
+    // Find reservations pending pickup by company
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.status = 'CONFIRMED' " +
+           "AND r.startDate = :today")
+    List<Reservation> findReservationsPendingPickupByCompany(@Param("companyId") Long companyId, @Param("today") LocalDate today);
+
+    // Find reservations pending return by company
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.status = 'IN_PROGRESS' " +
+           "AND r.endDate = :today")
+    List<Reservation> findReservationsPendingReturnByCompany(@Param("companyId") Long companyId, @Param("today") LocalDate today);
+
+    // Calculate revenue by company
+    @Query("SELECT SUM(r.totalAmount) FROM Reservation r WHERE r.company.id = :companyId AND r.status = 'COMPLETED' " +
+           "AND r.completedAt BETWEEN :startDate AND :endDate")
+    BigDecimal calculateRevenueByCompanyAndDateRange(@Param("companyId") Long companyId,
+                                                   @Param("startDate") LocalDateTime startDate,
+                                                   @Param("endDate") LocalDateTime endDate);
+
+    // Calculate monthly revenue by company
+    @Query("SELECT SUM(r.totalAmount) FROM Reservation r WHERE r.company.id = :companyId AND r.status = 'COMPLETED' " +
+           "AND YEAR(r.completedAt) = :year AND MONTH(r.completedAt) = :month")
+    BigDecimal calculateMonthlyRevenueByCompany(@Param("companyId") Long companyId, @Param("year") int year, @Param("month") int month);
+
+    // Get reservation statistics by company
+    @Query("SELECT " +
+           "COUNT(r) as totalReservations, " +
+           "COUNT(CASE WHEN r.status = 'PENDING' THEN 1 END) as pendingReservations, " +
+           "COUNT(CASE WHEN r.status = 'CONFIRMED' THEN 1 END) as confirmedReservations, " +
+           "COUNT(CASE WHEN r.status = 'IN_PROGRESS' THEN 1 END) as inProgressReservations, " +
+           "COUNT(CASE WHEN r.status = 'COMPLETED' THEN 1 END) as completedReservations, " +
+           "COUNT(CASE WHEN r.status = 'CANCELLED' THEN 1 END) as cancelledReservations, " +
+           "SUM(r.totalAmount) as totalRevenue, " +
+           "AVG(r.totalAmount) as averageReservationValue " +
+           "FROM Reservation r WHERE r.company.id = :companyId")
+    Object[] getReservationStatisticsByCompany(@Param("companyId") Long companyId);
+
+    // Find reservations by company and customer
+    List<Reservation> findByCompanyIdAndCustomerIdOrderByCreatedAtDesc(Long companyId, Long customerId);
+
+    // Find reservations by company and vehicle
+    List<Reservation> findByCompanyIdAndVehicleIdOrderByStartDateDesc(Long companyId, Long vehicleId);
+
+    // Find reservations by company and employee
+    List<Reservation> findByCompanyIdAndHandledByEmployeeIdOrderByCreatedAtDesc(Long companyId, Long employeeId);
+
+    // Count reservations by company and status
+    long countByCompanyIdAndStatus(Long companyId, Reservation.ReservationStatus status);
+
+    // Count reservations by company
+    long countByCompanyId(Long companyId);
+
+    // Find recent reservations by company
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.createdAt >= :thirtyDaysAgo " +
+           "ORDER BY r.createdAt DESC")
+    List<Reservation> findRecentReservationsByCompany(@Param("companyId") Long companyId, 
+                                                    @Param("thirtyDaysAgo") LocalDateTime thirtyDaysAgo);
+
+    // Find reservations by company and total amount range
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.totalAmount BETWEEN :minAmount AND :maxAmount")
+    List<Reservation> findByCompanyIdAndTotalAmountBetween(@Param("companyId") Long companyId, 
+                                                         @Param("minAmount") BigDecimal minAmount, 
+                                                         @Param("maxAmount") BigDecimal maxAmount);
+
+    // Find top customers by company
+    @Query("SELECT r.customer, COUNT(r) as reservationCount, SUM(r.totalAmount) as totalSpent " +
+           "FROM Reservation r WHERE r.company.id = :companyId AND r.status = 'COMPLETED' " +
+           "GROUP BY r.customer ORDER BY totalSpent DESC")
+    List<Object[]> findTopCustomersByCompany(@Param("companyId") Long companyId);
+
+    // Find popular vehicles by company
+    @Query("SELECT r.vehicle, COUNT(r) as reservationCount, SUM(r.totalAmount) as totalRevenue " +
+           "FROM Reservation r WHERE r.company.id = :companyId AND r.status = 'COMPLETED' " +
+           "GROUP BY r.vehicle ORDER BY totalRevenue DESC")
+    List<Object[]> findPopularVehiclesByCompany(@Param("companyId") Long companyId);
+
+    // Find reservations by company and location
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND " +
+           "(LOWER(r.pickupLocation) LIKE LOWER(CONCAT('%', :location, '%')) OR " +
+           "LOWER(r.returnLocation) LIKE LOWER(CONCAT('%', :location, '%')))")
+    List<Reservation> findByCompanyIdAndLocation(@Param("companyId") Long companyId, @Param("location") String location);
+
+    // Find reservations created in date range by company
+    @Query("SELECT r FROM Reservation r WHERE r.company.id = :companyId AND r.createdAt BETWEEN :startDate AND :endDate")
+    List<Reservation> findReservationsByCompanyAndCreatedDateRange(@Param("companyId") Long companyId, 
+                                                                 @Param("startDate") LocalDateTime startDate, 
+                                                                 @Param("endDate") LocalDateTime endDate);
 }

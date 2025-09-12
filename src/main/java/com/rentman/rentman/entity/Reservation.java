@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
-@Table(name = "reservations")
+@Table(name = "reservation")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -146,6 +146,11 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "handled_by_employee_id")
     private User handledByEmployee;
+
+    // Company relationship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
     // Audit fields
     @Column(name = "created_at", updatable = false)

@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user")
+@Table(name = "app_user")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -87,6 +87,30 @@ public class User {
     @Column(name = "hire_date")
     private LocalDate hireDate;
 
+    // Company relationship for employees
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    // Employee permissions and roles within company
+    @Column(name = "employee_permissions")
+    private String employeePermissions; // JSON array of permissions
+
+    @Column(name = "can_manage_fleet")
+    private Boolean canManageFleet = false;
+
+    @Column(name = "can_manage_reservations")
+    private Boolean canManageReservations = false;
+
+    @Column(name = "can_manage_employees")
+    private Boolean canManageEmployees = false;
+
+    @Column(name = "can_view_reports")
+    private Boolean canViewReports = false;
+
+    @Column(name = "can_manage_finances")
+    private Boolean canManageFinances = false;
+
     // Profile and preferences
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
@@ -134,24 +158,40 @@ public class User {
 
     // Check if user is admin or employee
     public boolean isAdminOrEmployee() {
-        return role == UserRole.ADMIN || role == UserRole.EMPLOYEE;
+        return role == UserRole.ADMIN || role == UserRole.EMPLOYEE || role == UserRole.COMPANY_ADMIN;
     }
 
     // Check if user can manage vehicles
     public boolean canManageVehicles() {
-        return role == UserRole.ADMIN || role == UserRole.EMPLOYEE;
+        return role == UserRole.ADMIN || role == UserRole.EMPLOYEE || role == UserRole.COMPANY_ADMIN;
     }
 
     // Check if user can view all reservations
     public boolean canViewAllReservations() {
-        return role == UserRole.ADMIN || role == UserRole.EMPLOYEE;
+        return role == UserRole.ADMIN || role == UserRole.EMPLOYEE || role == UserRole.COMPANY_ADMIN;
+    }
+
+    // Check if user is company admin
+    public boolean isCompanyAdmin() {
+        return role == UserRole.COMPANY_ADMIN;
+    }
+
+    // Check if user is platform admin
+    public boolean isPlatformAdmin() {
+        return role == UserRole.ADMIN;
+    }
+
+    // Check if user belongs to a company
+    public boolean belongsToCompany() {
+        return company != null;
     }
 
     // Enums
     public enum UserRole {
         CUSTOMER("Customer"),
         EMPLOYEE("Employee"),
-        ADMIN("Administrator");
+        COMPANY_ADMIN("Company Administrator"),
+        ADMIN("Platform Administrator");
 
         private final String displayName;
 

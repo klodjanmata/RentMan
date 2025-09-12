@@ -1,10 +1,15 @@
 package com.rentman.rentman.service;
 
 import com.rentman.rentman.dto.UserRegistrationDto;
+import com.rentman.rentman.dto.RegisterRequest;
 import com.rentman.rentman.entity.User;
+import com.rentman.rentman.entity.Company;
 import com.rentman.rentman.repository.UserRepository;
+import com.rentman.rentman.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +19,12 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // Register new user
     public User registerUser(UserRegistrationDto registrationDto) {
@@ -32,7 +43,7 @@ public class UserService {
         user.setFirstName(registrationDto.getFirstName());
         user.setLastName(registrationDto.getLastName());
         user.setEmail(registrationDto.getEmail());
-        user.setPassword(registrationDto.getPassword()); // TODO: Hash password in real implementation
+        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setPhoneNumber(registrationDto.getPhoneNumber());
         user.setDateOfBirth(registrationDto.getDateOfBirth());
         user.setDriverLicenseNumber(registrationDto.getDriverLicenseNumber());
@@ -60,10 +71,57 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    // Register user from RegisterRequest
+    public User registerUser(RegisterRequest registerRequest) {
+        // Check if email already exists
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new RuntimeException("Email already exists: " + registerRequest.getEmail());
+        }
+
+        // Check if phone number already exists
+        if (userRepository.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
+            throw new RuntimeException("Phone number already exists: " + registerRequest.getPhoneNumber());
+        }
+
+        // Create new user
+        User user = new User();
+        user.setFirstName(registerRequest.getFirstName());
+        user.setLastName(registerRequest.getLastName());
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setPhoneNumber(registerRequest.getPhoneNumber());
+        user.setDateOfBirth(registerRequest.getDateOfBirth());
+        user.setDriverLicenseNumber(registerRequest.getDriverLicenseNumber());
+        user.setLicenseExpiryDate(registerRequest.getLicenseExpiryDate());
+        user.setStreetAddress(registerRequest.getStreetAddress());
+        user.setCity(registerRequest.getCity());
+        user.setState(registerRequest.getState());
+        user.setPostalCode(registerRequest.getPostalCode());
+        user.setCountry(registerRequest.getCountry());
+        user.setRole(registerRequest.getRole());
+
+        // Set company if provided
+        if (registerRequest.getCompanyId() != null) {
+            Company company = companyRepository.findById(registerRequest.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found with ID: " + registerRequest.getCompanyId()));
+            user.setCompany(company);
+        }
+
+        // Employee specific fields
+        if (registerRequest.getRole() == User.UserRole.EMPLOYEE ||
+                registerRequest.getRole() == User.UserRole.COMPANY_ADMIN) {
+            user.setEmployeeId(registerRequest.getEmployeeId());
+            user.setDepartment(registerRequest.getDepartment());
+            user.setHireDate(registerRequest.getHireDate());
+        }
+
+        return userRepository.save(user);
+    }
+
     // Login user (simplified - no password hashing yet)
     public Optional<User> loginUser(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);
-        if (user.isPresent() && user.get().getPassword().equals(password)) {
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
             // Update last login
             User loginUser = user.get();
             loginUser.setLastLogin(LocalDateTime.now());
@@ -189,5 +247,20 @@ public class UserService {
             return userRepository.save(existingUser);
         }
         throw new RuntimeException("User not found with id: " + userId);
+    }
+
+    // Verify password
+    public boolean verifyPassword(Long userId, String password) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    // Update password
+    public void updatePassword(Long userId, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }
