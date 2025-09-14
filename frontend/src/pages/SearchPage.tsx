@@ -232,7 +232,7 @@ export const SearchPage: React.FC = () => {
         ) : error ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography variant="h6" color="error">
-              Error loading vehicles: {error.message}
+              Error loading vehicles: {error instanceof Error ? error.message : 'Unknown error occurred'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Please check if the backend is running on http://localhost:8080
