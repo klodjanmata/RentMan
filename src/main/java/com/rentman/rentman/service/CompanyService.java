@@ -4,16 +4,20 @@ import com.rentman.rentman.entity.Company;
 import com.rentman.rentman.entity.User;
 import com.rentman.rentman.entity.Vehicle;
 import com.rentman.rentman.entity.Reservation;
+import com.rentman.rentman.dto.CompanyRegistrationRequest;
+import com.rentman.rentman.dto.CompanyRegistrationResult;
 import com.rentman.rentman.repository.CompanyRepository;
 import com.rentman.rentman.repository.UserRepository;
 import com.rentman.rentman.repository.VehicleRepository;
 import com.rentman.rentman.repository.ReservationRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +37,9 @@ public class CompanyService {
 
     @Autowired
     private ReservationRepository reservationRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // ========== COMPANY CRUD OPERATIONS ==========
 
@@ -68,6 +75,101 @@ public class CompanyService {
         company.setMonthlyFee(plan.getMonthlyFee());
 
         return companyRepository.save(company);
+    }
+
+    // Register company with admin user
+    public CompanyRegistrationResult registerCompanyWithAdmin(CompanyRegistrationRequest request) {
+        // Validate that admin email is different from company email
+        if (request.getAdminEmail().equals(request.getCompanyEmail())) {
+            throw new RuntimeException("Admin email must be different from company email");
+        }
+
+        // Check if admin email already exists
+        if (userRepository.existsByEmail(request.getAdminEmail())) {
+            throw new RuntimeException("Admin email already exists: " + request.getAdminEmail());
+        }
+
+        // Check if company email already exists
+        if (companyRepository.existsByEmail(request.getCompanyEmail())) {
+            throw new RuntimeException("Company email already exists: " + request.getCompanyEmail());
+        }
+
+        // Check if business registration number already exists
+        if (companyRepository.existsByBusinessRegistrationNumber(request.getBusinessRegistrationNumber())) {
+            throw new RuntimeException("Business registration number already exists: " + request.getBusinessRegistrationNumber());
+        }
+
+        // Check if tax ID already exists
+        if (companyRepository.existsByTaxId(request.getTaxId())) {
+            throw new RuntimeException("Tax ID already exists: " + request.getTaxId());
+        }
+
+        // Create company
+        Company company = new Company();
+        company.setCompanyName(request.getCompanyName());
+        company.setBusinessRegistrationNumber(request.getBusinessRegistrationNumber());
+        company.setTaxId(request.getTaxId());
+        company.setEmail(request.getCompanyEmail());
+        company.setPhoneNumber(request.getPhoneNumber());
+        company.setWebsite(request.getWebsite());
+        company.setStreetAddress(request.getStreetAddress());
+        company.setCity(request.getCity());
+        company.setState(request.getState());
+        company.setPostalCode(request.getPostalCode());
+        company.setCountry(request.getCountry());
+        company.setBusinessType(request.getBusinessType());
+        company.setDescription(request.getDescription());
+        company.setContactPersonName(request.getContactPersonName());
+        company.setContactPersonTitle(request.getContactPersonTitle());
+        company.setSubscriptionPlan(request.getSubscriptionPlan());
+        company.setStatus(Company.CompanyStatus.PENDING_APPROVAL);
+        company.setIsVerified(false);
+        company.setIsFeatured(false);
+
+        // Set subscription limits based on plan
+        Company.SubscriptionPlan plan = request.getSubscriptionPlan();
+        company.setMaxVehicles(plan.getMaxVehicles());
+        company.setMaxEmployees(plan.getMaxEmployees());
+        company.setMonthlyFee(plan.getMonthlyFee());
+
+        Company savedCompany = companyRepository.save(company);
+
+        // Create admin user
+        User adminUser = new User();
+        adminUser.setFirstName(request.getAdminFirstName());
+        adminUser.setLastName(request.getAdminLastName());
+        adminUser.setEmail(request.getAdminEmail());
+        adminUser.setPassword(passwordEncoder.encode(request.getAdminPassword()));
+        adminUser.setPhoneNumber(request.getAdminPhoneNumber());
+        // Convert date strings to LocalDate if provided
+        if (request.getAdminDateOfBirth() != null && !request.getAdminDateOfBirth().isEmpty()) {
+            adminUser.setDateOfBirth(LocalDate.parse(request.getAdminDateOfBirth()));
+        }
+        adminUser.setDriverLicenseNumber(request.getAdminDriverLicenseNumber());
+        if (request.getAdminLicenseExpiryDate() != null && !request.getAdminLicenseExpiryDate().isEmpty()) {
+            adminUser.setLicenseExpiryDate(LocalDate.parse(request.getAdminLicenseExpiryDate()));
+        }
+        adminUser.setStreetAddress(request.getAdminStreetAddress() != null ? request.getAdminStreetAddress() : request.getStreetAddress());
+        adminUser.setCity(request.getAdminCity() != null ? request.getAdminCity() : request.getCity());
+        adminUser.setState(request.getAdminState() != null ? request.getAdminState() : request.getState());
+        adminUser.setPostalCode(request.getAdminPostalCode() != null ? request.getAdminPostalCode() : request.getPostalCode());
+        adminUser.setCountry(request.getAdminCountry() != null ? request.getAdminCountry() : request.getCountry());
+        adminUser.setRole(User.UserRole.ADMIN);
+        adminUser.setCompany(savedCompany);
+        adminUser.setStatus(User.UserStatus.ACTIVE);
+        adminUser.setEmailVerified(false);
+        adminUser.setPhoneVerified(false);
+
+        // Set admin permissions
+        adminUser.setCanManageEmployees(true);
+        adminUser.setCanManageFleet(true);
+        adminUser.setCanManageReservations(true);
+        adminUser.setCanViewReports(true);
+        adminUser.setCanManageFinances(true);
+
+        User savedAdminUser = userRepository.save(adminUser);
+
+        return new CompanyRegistrationResult(savedCompany, savedAdminUser);
     }
 
     public Company updateCompany(Long id, Company companyDetails) {

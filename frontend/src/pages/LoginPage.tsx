@@ -5,53 +5,39 @@ import {
   TextField,
   Button,
   Typography,
-  Link,
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { LoginRequest } from '../types/auth';
-import toast from 'react-hot-toast';
-
-const schema = yup.object({
-  email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup.string().required('Password is required'),
-});
+import { useAuth } from '../contexts/AuthContext';
 
 export const LoginPage: React.FC = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginRequest>({
-    resolver: yupResolver(schema),
+  const [formData, setFormData] = useState<LoginRequest>({
+    email: '',
+    password: '',
   });
 
-  const onSubmit = async (data: LoginRequest) => {
+  const handleInputChange = (field: keyof LoginRequest, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (error) setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      await login(data);
-      toast.success('Login successful!');
-      
-      // Redirect to intended page or dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      await login(formData);
+      // Redirect to dashboard after successful login
+      navigate('/dashboard');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Login failed. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      setError(err.response?.data?.error || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -96,28 +82,28 @@ export const LoginPage: React.FC = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+        <Box component="form" onSubmit={handleSubmit}>
           <TextField
-            {...register('email')}
             fullWidth
             label="Email"
             type="email"
             margin="normal"
-            error={!!errors.email}
-            helperText={errors.email?.message}
+            value={formData.email}
+            onChange={(e) => handleInputChange('email', e.target.value)}
             autoComplete="email"
             autoFocus
+            required
           />
 
           <TextField
-            {...register('password')}
             fullWidth
             label="Password"
             type="password"
             margin="normal"
-            error={!!errors.password}
-            helperText={errors.password?.message}
+            value={formData.password}
+            onChange={(e) => handleInputChange('password', e.target.value)}
             autoComplete="current-password"
+            required
           />
 
           <Button
@@ -134,14 +120,23 @@ export const LoginPage: React.FC = () => {
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2">
               Don't have an account?{' '}
-              <Link
-                component="button"
-                variant="body2"
+              <Button
+                variant="text"
                 onClick={handleRegisterClick}
-                sx={{ textDecoration: 'none' }}
+                sx={{ textTransform: 'none' }}
               >
                 Sign up here
-              </Link>
+              </Button>
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Own a rental company?{' '}
+              <Button
+                variant="text"
+                onClick={() => navigate('/register-company')}
+                sx={{ textTransform: 'none' }}
+              >
+                Register your company
+              </Button>
             </Typography>
           </Box>
         </Box>

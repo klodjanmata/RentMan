@@ -7,6 +7,9 @@ import com.rentman.rentman.entity.Reservation;
 import com.rentman.rentman.entity.Maintenance;
 import com.rentman.rentman.entity.Defect;
 import com.rentman.rentman.entity.Invoice;
+import com.rentman.rentman.dto.CompanyRegistrationRequest;
+import com.rentman.rentman.dto.CompanyRegistrationResult;
+import com.rentman.rentman.service.CompanyService;
 import com.rentman.rentman.repository.CompanyRepository;
 import com.rentman.rentman.repository.UserRepository;
 import com.rentman.rentman.repository.VehicleRepository;
@@ -58,6 +61,9 @@ public class CompanyController {
     @Autowired
     private InvoiceRepository invoiceRepository;
 
+    @Autowired
+    private CompanyService companyService;
+
     // ========== COMPANY MANAGEMENT ==========
 
     // Get all companies
@@ -105,6 +111,25 @@ public class CompanyController {
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to create company: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Register company with admin user
+    @PostMapping("/register")
+    public ResponseEntity<?> registerCompanyWithAdmin(@Valid @RequestBody CompanyRegistrationRequest request) {
+        try {
+            CompanyRegistrationResult result = companyService.registerCompanyWithAdmin(request);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("company", result.getCompany());
+            response.put("adminUser", result.getAdminUser());
+            response.put("message", "Company and admin user registered successfully");
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
         }
     }

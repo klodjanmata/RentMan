@@ -189,8 +189,16 @@ export const HomePage: React.FC = () => {
           variant="outlined"
           size="large"
           onClick={() => navigate('/register')}
+          sx={{ mr: 2 }}
         >
           Create Account
+        </Button>
+        <Button
+          variant="outlined"
+          size="large"
+          onClick={() => navigate('/register-company')}
+        >
+          Register Company
         </Button>
       </Container>
     </Box>

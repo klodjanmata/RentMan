@@ -18,6 +18,7 @@ import { MaintenancePage } from './pages/MaintenancePage';
 import { DefectsPage } from './pages/DefectsPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { CompanyRegisterPage } from './pages/CompanyRegisterPage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="register-company" element={<CompanyRegisterPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="vehicles/:id" element={<VehicleDetailsPage />} />
         </Route>

@@ -141,6 +141,16 @@ class ApiService {
     const response = await this.api.get(`/companies/${companyId}/revenue`, { params });
     return response.data;
   }
+
+  async createCompany(companyData: any): Promise<any> {
+    const response = await this.api.post('/companies', companyData);
+    return response.data;
+  }
+
+  async registerCompanyWithAdmin(companyData: any): Promise<any> {
+    const response = await this.api.post('/companies/register', companyData);
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService();
@@ -170,6 +180,8 @@ export const companyApi = {
   getStatistics: (id: string) => apiService.getCompanyStatistics(id),
   getRevenue: (id: string, startDate?: string, endDate?: string) => 
     apiService.getCompanyRevenue(id, startDate, endDate),
+  create: (companyData: any) => apiService.createCompany(companyData),
+  register: (companyData: any) => apiService.registerCompanyWithAdmin(companyData),
 };
 
 export const reservationApi = {

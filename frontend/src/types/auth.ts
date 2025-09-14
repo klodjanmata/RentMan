@@ -45,6 +45,7 @@ export interface RegisterRequest {
   lastName: string;
   email: string;
   password: string;
+  confirmPassword?: string; // Frontend-only field for validation
   phoneNumber: string;
   dateOfBirth?: string;
   driverLicenseNumber?: string;
