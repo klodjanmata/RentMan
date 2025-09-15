@@ -3,6 +3,7 @@ export interface Vehicle {
   make: string;
   model: string;
   year: number;
+  licensePlate?: string;
   type: VehicleType;
   status: VehicleStatus;
   dailyRate: number;
@@ -41,19 +42,13 @@ export interface Vehicle {
 }
 
 export enum VehicleType {
-  ECONOMY = 'ECONOMY',
-  COMPACT = 'COMPACT',
-  INTERMEDIATE = 'INTERMEDIATE',
-  STANDARD = 'STANDARD',
-  FULL_SIZE = 'FULL_SIZE',
-  PREMIUM = 'PREMIUM',
-  LUXURY = 'LUXURY',
+  CAR = 'CAR',
   SUV = 'SUV',
-  MINIVAN = 'MINIVAN',
-  CONVERTIBLE = 'CONVERTIBLE',
-  SPORTS_CAR = 'SPORTS_CAR',
   TRUCK = 'TRUCK',
-  VAN = 'VAN'
+  VAN = 'VAN',
+  MOTORCYCLE = 'MOTORCYCLE',
+  LUXURY = 'LUXURY',
+  CONVERTIBLE = 'CONVERTIBLE'
 }
 
 export enum VehicleStatus {

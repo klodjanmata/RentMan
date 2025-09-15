@@ -5,8 +5,8 @@ import { User, LoginRequest, RegisterRequest } from '../types/auth';
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (credentials: LoginRequest) => Promise<void>;
-  register: (userData: RegisterRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<User>;
+  register: (userData: RegisterRequest) => Promise<User>;
   logout: () => void;
   loading: boolean;
   isAuthenticated: boolean;
@@ -61,6 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
+      return userData;
     } catch (error) {
       throw error;
     }
@@ -74,6 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userInfo);
+      return userInfo;
     } catch (error) {
       throw error;
     }

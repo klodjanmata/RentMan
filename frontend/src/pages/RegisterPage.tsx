@@ -121,12 +121,16 @@ export const RegisterPage: React.FC = () => {
       // Prepare data for API (remove confirmPassword)
       const { confirmPassword, ...registerData } = formData;
       
-      await register(registerData);
+      const user = await register(registerData);
       setSuccess(true);
       
-      // Redirect to dashboard after a short delay
+      // Redirect based on user role after a short delay
       setTimeout(() => {
-        navigate('/dashboard');
+        if (user?.role === 'ADMIN' || user?.role === 'COMPANY_ADMIN' || user?.role === 'EMPLOYEE') {
+          navigate('/company/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       }, 2000);
 
     } catch (err: any) {

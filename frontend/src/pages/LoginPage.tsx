@@ -33,9 +33,13 @@ export const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      await login(formData);
-      // Redirect to dashboard after successful login
-      navigate('/dashboard');
+      const user = await login(formData);
+      // Redirect based on user role after successful login
+      if (user?.role === 'ADMIN' || user?.role === 'COMPANY_ADMIN' || user?.role === 'EMPLOYEE') {
+        navigate('/company/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
     } finally {
