@@ -5,6 +5,8 @@ import com.rentman.rentman.entity.Company;
 import com.rentman.rentman.repository.VehicleRepository;
 import com.rentman.rentman.repository.CompanyRepository;
 import com.rentman.rentman.repository.ReservationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +25,8 @@ import java.util.Map;
 @RequestMapping("/api/search")
 @CrossOrigin(origins = "*")
 public class SearchController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
 
     @Autowired
     private VehicleRepository vehicleRepository;
@@ -87,12 +91,48 @@ public class SearchController {
                 vehicleType = Vehicle.VehicleType.valueOf(type.toUpperCase());
             }
 
-            // Perform search
-            List<Vehicle> vehicles = vehicleRepository.searchVehicles(
-                companyId, vehicleType, make, model, minRate, maxRate, minYear, maxYear,
-                fuelType, transmission, minSeating, maxSeating, location,
-                airConditioning, gpsNavigation, bluetooth, backupCamera, sunroof, leatherSeats
-            );
+            // Get all available vehicles and apply filters
+            List<Vehicle> vehicles = vehicleRepository.findByStatus(Vehicle.VehicleStatus.AVAILABLE);
+            logger.info("=== SEARCH VEHICLES DEBUG ===");
+            logger.info("Found {} available vehicles", vehicles.size());
+            
+            // Log all vehicles and their company status
+            for (Vehicle vehicle : vehicles) {
+                logger.info("Vehicle: {} {} (ID: {}) - Company: {} (Status: {})", 
+                    vehicle.getMake(), vehicle.getModel(), vehicle.getId(),
+                    vehicle.getCompany() != null ? vehicle.getCompany().getCompanyName() : "NULL",
+                    vehicle.getCompany() != null ? vehicle.getCompany().getStatus() : "NULL");
+            }
+            
+            // Apply filters manually
+            final Vehicle.VehicleType finalVehicleType = vehicleType;
+            List<Vehicle> filteredVehicles = vehicles.stream()
+                .filter(vehicle -> vehicle.getCompany() != null && 
+                        vehicle.getCompany().getStatus() == Company.CompanyStatus.ACTIVE)
+                .filter(vehicle -> (companyId == null || vehicle.getCompany().getId().equals(companyId)))
+                .filter(vehicle -> finalVehicleType == null || vehicle.getType() == finalVehicleType)
+                .filter(vehicle -> make == null || vehicle.getMake().toLowerCase().contains(make.toLowerCase()))
+                .filter(vehicle -> model == null || vehicle.getModel().toLowerCase().contains(model.toLowerCase()))
+                .filter(vehicle -> minRate == null || vehicle.getDailyRate().compareTo(minRate) >= 0)
+                .filter(vehicle -> maxRate == null || vehicle.getDailyRate().compareTo(maxRate) <= 0)
+                .filter(vehicle -> minYear == null || vehicle.getYear() >= minYear)
+                .filter(vehicle -> maxYear == null || vehicle.getYear() <= maxYear)
+                .filter(vehicle -> fuelType == null || fuelType.equals(vehicle.getFuelType()))
+                .filter(vehicle -> transmission == null || transmission.equals(vehicle.getTransmission()))
+                .filter(vehicle -> minSeating == null || vehicle.getSeatingCapacity() >= minSeating)
+                .filter(vehicle -> maxSeating == null || vehicle.getSeatingCapacity() <= maxSeating)
+                .filter(vehicle -> location == null || (vehicle.getCurrentLocation() != null && 
+                        vehicle.getCurrentLocation().toLowerCase().contains(location.toLowerCase())))
+                .filter(vehicle -> airConditioning == null || airConditioning.equals(vehicle.getAirConditioning()))
+                .filter(vehicle -> gpsNavigation == null || gpsNavigation.equals(vehicle.getGpsNavigation()))
+                .filter(vehicle -> bluetooth == null || bluetooth.equals(vehicle.getBluetooth()))
+                .filter(vehicle -> backupCamera == null || backupCamera.equals(vehicle.getBackupCamera()))
+                .filter(vehicle -> sunroof == null || sunroof.equals(vehicle.getSunroof()))
+                .filter(vehicle -> leatherSeats == null || leatherSeats.equals(vehicle.getLeatherSeats()))
+                .toList();
+            
+            logger.info("After filtering: {} vehicles", filteredVehicles.size());
+            vehicles = filteredVehicles;
 
             // Filter by availability if dates provided
             if (startDate != null && endDate != null) {
@@ -179,11 +219,19 @@ public class SearchController {
                 vehicleType = Vehicle.VehicleType.valueOf(type.toUpperCase());
             }
 
-            List<Vehicle> vehicles = vehicleRepository.searchVehicles(
-                null, vehicleType, null, null, null, maxRate, null, null,
-                null, null, null, null, location,
-                null, null, null, null, null, null
-            );
+            // Get all available vehicles
+            List<Vehicle> vehicles = vehicleRepository.findByStatus(Vehicle.VehicleStatus.AVAILABLE);
+            
+            // Apply basic filters
+            final Vehicle.VehicleType finalVehicleType = vehicleType;
+            vehicles = vehicles.stream()
+                .filter(vehicle -> vehicle.getCompany() != null && 
+                        vehicle.getCompany().getStatus() == Company.CompanyStatus.ACTIVE)
+                .filter(vehicle -> finalVehicleType == null || vehicle.getType() == finalVehicleType)
+                .filter(vehicle -> maxRate == null || vehicle.getDailyRate().compareTo(maxRate) <= 0)
+                .filter(vehicle -> location == null || (vehicle.getCurrentLocation() != null && 
+                        vehicle.getCurrentLocation().toLowerCase().contains(location.toLowerCase())))
+                .toList();
 
             // Limit results
             if (vehicles.size() > limit) {
