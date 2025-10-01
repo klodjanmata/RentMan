@@ -1,0 +1,163 @@
+### Platform Admin API Tests
+### Base URL
+@baseUrl = http://localhost:8080/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### ========================================
+### STEP 1: Register Platform Admin (First Time Only)
+### ========================================
+POST {{baseUrl}}/auth/register-platform-admin
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "Platform",
+  "email": "admin@rentman.com",
+  "password": "admin123",
+  "phoneNumber": "+1234567890"
+}
+
+### ========================================
+### STEP 2: Login as Platform Admin
+### ========================================
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@rentman.com",
+  "password": "admin123"
+}
+
+### ========================================
+### STEP 3: Get Platform Dashboard (requires admin token)
+### ========================================
+GET {{baseUrl}}/platform-admin/dashboard
+Authorization: Bearer {{token}}
+
+### ========================================
+### STEP 4: Get All Pending Companies
+### ========================================
+GET {{baseUrl}}/platform-admin/companies/pending
+Authorization: Bearer {{token}}
+
+### ========================================
+### STEP 5: Get All Companies (with optional status filter)
+### ========================================
+### Get all companies
+GET {{baseUrl}}/platform-admin/companies
+Authorization: Bearer {{token}}
+
+### Get companies by status (PENDING_APPROVAL, ACTIVE, SUSPENDED, REJECTED, INACTIVE)
+GET {{baseUrl}}/platform-admin/companies?status=ACTIVE
+Authorization: Bearer {{token}}
+
+### ========================================
+### STEP 6: Approve a Company
+### Replace {companyId} with the actual company ID
+### ========================================
+POST {{baseUrl}}/platform-admin/companies/1/approve
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{}
+
+### ========================================
+### STEP 7: Reject a Company
+### Replace {companyId} with the actual company ID
+### ========================================
+POST {{baseUrl}}/platform-admin/companies/1/reject
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reason": "Incomplete business registration documents"
+}
+
+### ========================================
+### STEP 8: Suspend a Company
+### Replace {companyId} with the actual company ID
+### ========================================
+POST {{baseUrl}}/platform-admin/companies/1/suspend
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reason": "Multiple customer complaints and violations"
+}
+
+### ========================================
+### STEP 9: Reactivate a Suspended Company
+### Replace {companyId} with the actual company ID
+### ========================================
+POST {{baseUrl}}/platform-admin/companies/1/reactivate
+Authorization: Bearer {{token}}
+
+### ========================================
+### STEP 10: Get All Platform Admins
+### ========================================
+GET {{baseUrl}}/platform-admin/admins
+Authorization: Bearer {{token}}
+
+### ========================================
+### EXAMPLE WORKFLOW: Complete Company Approval Process
+### ========================================
+
+### 1. First, create a platform admin (if not exists)
+POST {{baseUrl}}/auth/register-platform-admin
+Content-Type: application/json
+
+{
+  "firstName": "Super",
+  "lastName": "Admin",
+  "email": "superadmin@rentman.com",
+  "password": "SecurePassword123!",
+  "phoneNumber": "+1987654321"
+}
+
+###
+
+### 2. Login and get token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@rentman.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### 3. View dashboard statistics
+GET {{baseUrl}}/platform-admin/dashboard
+Authorization: Bearer {{token}}
+
+###
+
+### 4. Get list of pending companies
+GET {{baseUrl}}/platform-admin/companies/pending
+Authorization: Bearer {{token}}
+
+###
+
+### 5. Review and approve company (replace 1 with actual company ID from step 4)
+POST {{baseUrl}}/platform-admin/companies/1/approve
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{}
+
+###
+
+### 6. Verify the company is now active
+GET {{baseUrl}}/companies/1
+Authorization: Bearer {{token}}
+
+### ========================================
+### NOTES:
+### ========================================
+### 1. After registering the platform admin, copy the JWT token from the response
+### 2. Replace {{token}} at the top of this file with the actual token
+### 3. Replace company IDs in the URLs with actual IDs from your database
+### 4. The platform admin registration endpoint should be secured in production
+### 5. You might want to disable the registration endpoint after creating the first admin
+

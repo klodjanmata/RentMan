@@ -119,4 +119,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     // Find companies near a location (within radius - simplified)
     @Query("SELECT c FROM Company c WHERE c.city = :city AND c.state = :state AND c.status = 'ACTIVE'")
     List<Company> findCompaniesNearLocation(@Param("city") String city, @Param("state") String state);
+
+    // Find recent companies (top N)
+    List<Company> findTop10ByOrderByCreatedAtDesc();
 }

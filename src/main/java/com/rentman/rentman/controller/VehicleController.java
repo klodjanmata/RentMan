@@ -88,9 +88,16 @@ public class VehicleController {
     // Get vehicle by ID
     @GetMapping("/{id}")
     public ResponseEntity<Vehicle> getVehicleById(@PathVariable Long id) {
-        Optional<Vehicle> vehicle = vehicleRepository.findById(id);
-        return vehicle.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Vehicle> vehicleOpt = vehicleRepository.findById(id);
+        if (vehicleOpt.isPresent()) {
+            Vehicle vehicle = vehicleOpt.get();
+            // Ensure company is loaded (trigger lazy loading)
+            if (vehicle.getCompany() != null) {
+                vehicle.getCompany().getCompanyName(); // Access company to initialize proxy
+            }
+            return ResponseEntity.ok(vehicle);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     // Debug endpoint to check company status

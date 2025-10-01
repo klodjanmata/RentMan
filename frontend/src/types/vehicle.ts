@@ -6,15 +6,27 @@ export interface Vehicle {
   licensePlate?: string;
   type: VehicleType;
   status: VehicleStatus;
-  dailyRate: number;
+  dailyRate: string | number;
   mileage: number;
   color: string;
   fuelType: string;
   transmission: string;
   seatingCapacity: number;
+  luggageCapacity?: number;
   features: string[];
   description: string;
   imageUrls: string[];
+  
+  // Amenities
+  airConditioning?: boolean;
+  gpsNavigation?: boolean;
+  bluetooth?: boolean;
+  usbCharging?: boolean;
+  backupCamera?: boolean;
+  parkingSensors?: boolean;
+  sunroof?: boolean;
+  leatherSeats?: boolean;
+  
   company: {
     id: number;
     companyName: string;

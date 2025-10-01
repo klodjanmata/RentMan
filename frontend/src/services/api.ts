@@ -21,7 +21,7 @@ class ApiService {
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('token');
-        if (token) {
+        if (token && token !== 'null' && token !== 'undefined') {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -70,8 +70,10 @@ class ApiService {
 
   // Vehicle endpoints
   async searchVehicles(params: VehicleSearchParams): Promise<Vehicle[]> {
-    const response: AxiosResponse<Vehicle[]> = await this.api.get('/search/vehicles', { params });
-    return response.data;
+    const response: AxiosResponse<any> = await this.api.get('/search/vehicles', { params });
+    // Backend returns { vehicles: [...], totalCount: 4, ... }
+    // We need to extract just the vehicles array
+    return response.data.vehicles || response.data;
   }
 
   async getVehicle(id: string): Promise<Vehicle> {

@@ -36,6 +36,13 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Redirect platform admins to their own dashboard
+  React.useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      navigate('/platform-admin');
+    }
+  }, [user, navigate]);
+
   const { data: featuredCompanies } = useQuery(
     'featuredCompanies',
     companyApi.getFeatured

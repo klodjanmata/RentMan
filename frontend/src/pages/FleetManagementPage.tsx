@@ -373,7 +373,7 @@ export const FleetManagementPage: React.FC = () => {
       licensePlate: vehicle.licensePlate || '',
       type: vehicle.type,
       status: vehicle.status,
-      dailyRate: vehicle.dailyRate,
+      dailyRate: typeof vehicle.dailyRate === 'string' ? parseFloat(vehicle.dailyRate) : vehicle.dailyRate,
       fuelType: vehicle.fuelType || 'Gasoline',
       transmission: vehicle.transmission || 'Automatic',
       seatingCapacity: vehicle.seatingCapacity || 5,
@@ -608,7 +608,7 @@ export const FleetManagementPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" fontWeight="bold">
-                          ${vehicle.dailyRate.toFixed(2)}/day
+                          ${(typeof vehicle.dailyRate === 'string' ? parseFloat(vehicle.dailyRate) : vehicle.dailyRate).toFixed(2)}/day
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -1079,7 +1079,7 @@ const VehicleDetails: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
               Daily Rate
             </Typography>
             <Typography variant="body1" fontWeight="bold">
-              ${vehicle.dailyRate.toFixed(2)}/day
+              ${(typeof vehicle.dailyRate === 'string' ? parseFloat(vehicle.dailyRate) : vehicle.dailyRate).toFixed(2)}/day
             </Typography>
           </Box>
           <Box sx={{ mb: 2 }}>

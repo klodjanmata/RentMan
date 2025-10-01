@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 public class ReservationCreateDto {
 
-    @NotNull(message = "Customer ID is required")
+    // Customer ID will be set automatically from authenticated user
     private Long customerId;
 
     @NotNull(message = "Vehicle ID is required")

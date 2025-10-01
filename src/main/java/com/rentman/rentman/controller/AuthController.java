@@ -93,6 +93,33 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/register-platform-admin")
+    public ResponseEntity<?> registerPlatformAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
+        try {
+            // Security note: In production, you should protect this endpoint or only allow it once
+            // You might want to add a secret key check or disable after first admin is created
+            
+            User user = userService.registerPlatformAdmin(registerRequest);
+            
+            // Generate JWT token for the new admin
+            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+            String jwt = jwtUtil.generateToken(userDetails);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", jwt);
+            response.put("type", "Bearer");
+            response.put("expiresIn", jwtUtil.getExpirationTime());
+            response.put("user", createUserResponse(user));
+            response.put("message", "Platform administrator registered successfully");
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String authHeader) {
         try {

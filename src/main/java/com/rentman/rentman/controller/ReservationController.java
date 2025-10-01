@@ -3,11 +3,14 @@ package com.rentman.rentman.controller;
 import com.rentman.rentman.dto.ReservationCreateDto;
 import com.rentman.rentman.entity.Reservation;
 import com.rentman.rentman.service.ReservationService;
+import com.rentman.rentman.service.CustomUserDetailsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,10 +27,25 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
+    // Helper method to get current user ID
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetailsService.CustomUserPrincipal) {
+            CustomUserDetailsService.CustomUserPrincipal principal = 
+                (CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
+            return principal.getUserId();
+        }
+        throw new RuntimeException("User not authenticated");
+    }
+
     // Create new reservation
     @PostMapping
     public ResponseEntity<?> createReservation(@Valid @RequestBody ReservationCreateDto createDto) {
         try {
+            // Automatically set customer ID from authenticated user
+            Long customerId = getCurrentUserId();
+            createDto.setCustomerId(customerId);
+            
             Reservation reservation = reservationService.createReservation(createDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
         } catch (RuntimeException e) {
@@ -37,11 +55,18 @@ public class ReservationController {
         }
     }
 
-    // Get all reservations
+    // Get all reservations (for current user)
     @GetMapping
     public ResponseEntity<List<Reservation>> getAllReservations() {
-        List<Reservation> reservations = reservationService.getAllReservations();
-        return ResponseEntity.ok(reservations);
+        try {
+            // Get current user's reservations
+            Long userId = getCurrentUserId();
+            List<Reservation> reservations = reservationService.getCustomerReservations(userId);
+            return ResponseEntity.ok(reservations);
+        } catch (RuntimeException e) {
+            // If user not authenticated or error, return empty list
+            return ResponseEntity.ok(List.of());
+        }
     }
 
     // Get reservation by ID

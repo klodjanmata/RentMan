@@ -47,9 +47,15 @@ export const Layout: React.FC = () => {
               <Typography variant="body2" sx={{ alignSelf: 'center', mr: 2 }}>
                 Welcome, {user?.firstName}!
               </Typography>
-              <Button color="inherit" onClick={() => navigate('/dashboard')}>
-                Dashboard
-              </Button>
+              {user?.role === 'ADMIN' ? (
+                <Button color="inherit" onClick={() => navigate('/platform-admin')} sx={{ bgcolor: 'warning.dark' }}>
+                  Platform Admin
+                </Button>
+              ) : (
+                <Button color="inherit" onClick={() => navigate('/dashboard')}>
+                  Dashboard
+                </Button>
+              )}
               {user?.role === 'COMPANY_ADMIN' || user?.role === 'EMPLOYEE' ? (
                 <Button color="inherit" onClick={() => navigate('/company/dashboard')}>
                   Company

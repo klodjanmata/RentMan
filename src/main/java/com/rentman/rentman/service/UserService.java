@@ -9,7 +9,6 @@ import com.rentman.rentman.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -114,6 +113,38 @@ public class UserService {
             user.setDepartment(registerRequest.getDepartment());
             user.setHireDate(registerRequest.getHireDate());
         }
+
+        return userRepository.save(user);
+    }
+
+    // Register platform admin
+    public User registerPlatformAdmin(RegisterRequest registerRequest) {
+        // Check if email already exists
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new RuntimeException("Email already exists: " + registerRequest.getEmail());
+        }
+
+        // Check if phone number already exists
+        if (userRepository.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
+            throw new RuntimeException("Phone number already exists: " + registerRequest.getPhoneNumber());
+        }
+
+        // Create new platform admin user
+        User user = new User();
+        user.setFirstName(registerRequest.getFirstName());
+        user.setLastName(registerRequest.getLastName());
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setPhoneNumber(registerRequest.getPhoneNumber());
+        user.setDateOfBirth(registerRequest.getDateOfBirth());
+        user.setStreetAddress(registerRequest.getStreetAddress());
+        user.setCity(registerRequest.getCity());
+        user.setState(registerRequest.getState());
+        user.setPostalCode(registerRequest.getPostalCode());
+        user.setCountry(registerRequest.getCountry());
+        user.setRole(User.UserRole.ADMIN); // Force ADMIN role
+        user.setStatus(User.UserStatus.ACTIVE);
+        user.setEmailVerified(true); // Auto-verify platform admin
 
         return userRepository.save(user);
     }

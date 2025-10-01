@@ -57,7 +57,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // Public endpoints
+                // Public endpoints - Must be first!
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/companies/register").permitAll()
                 .requestMatchers("/api/search/**").permitAll()
@@ -70,10 +70,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/companies/{id}").permitAll()
                 .requestMatchers("/api/companies/statistics/platform").permitAll()
                 
+                // Platform Admin only endpoints
+                .requestMatchers("/api/platform-admin/**").hasRole("ADMIN")
+                
                 // Admin only endpoints
                 .requestMatchers("/api/companies/{id}/status").hasRole("ADMIN")
                 .requestMatchers("/api/companies/{id}/subscription").hasRole("ADMIN")
-                .requestMatchers("/api/companies/{id}").hasAnyRole("ADMIN", "COMPANY_ADMIN")
                 .requestMatchers("/api/companies").hasAnyRole("ADMIN", "COMPANY_ADMIN")
                 .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "COMPANY_ADMIN")
                 .requestMatchers("/api/companies/statistics/**").hasAnyRole("ADMIN", "COMPANY_ADMIN")
@@ -89,9 +91,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/companies/{id}/statistics").hasAnyRole("ADMIN", "COMPANY_ADMIN", "EMPLOYEE")
                 .requestMatchers("/api/companies/{id}/revenue").hasAnyRole("ADMIN", "COMPANY_ADMIN", "EMPLOYEE")
                 
-                // Vehicle management
+                // Vehicle management (except public endpoints already defined above)
                 .requestMatchers("/api/vehicles").hasAnyRole("ADMIN", "COMPANY_ADMIN", "EMPLOYEE")
-                .requestMatchers("/api/vehicles/**").hasAnyRole("ADMIN", "COMPANY_ADMIN", "EMPLOYEE")
                 
                 // Reservation management
                 .requestMatchers("/api/reservations").hasAnyRole("ADMIN", "COMPANY_ADMIN", "EMPLOYEE", "CUSTOMER")

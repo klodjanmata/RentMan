@@ -21,6 +21,7 @@ import {
   BugReport,
   TrendingUp,
   Business,
+  EventNote,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,6 +29,17 @@ import { useAuth } from '../contexts/AuthContext';
 export const CompanyDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Redirect platform admins and customers
+  React.useEffect(() => {
+    if (user) {
+      if (user.role === 'ADMIN') {
+        navigate('/platform-admin');
+      } else if (user.role === 'CUSTOMER') {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, navigate]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -37,6 +49,13 @@ export const CompanyDashboardPage: React.FC = () => {
   };
 
   const managementCards = [
+    {
+      title: 'Reservations',
+      description: 'Manage customer bookings',
+      icon: <EventNote />,
+      color: 'success',
+      path: '/company/reservations',
+    },
     {
       title: 'Fleet Management',
       description: 'Manage your vehicle inventory',

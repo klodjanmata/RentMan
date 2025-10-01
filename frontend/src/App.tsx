@@ -19,6 +19,8 @@ import { DefectsPage } from './pages/DefectsPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { CompanyRegisterPage } from './pages/CompanyRegisterPage';
+import { PlatformAdminDashboardPage } from './pages/PlatformAdminDashboardPage';
+import { CompanyReservationsPage } from './pages/CompanyReservationsPage';
 
 function App() {
   return (
@@ -43,11 +45,15 @@ function App() {
           {/* Company Management Routes */}
           <Route path="company/dashboard" element={<CompanyDashboardPage />} />
           <Route path="company/fleet" element={<FleetManagementPage />} />
+          <Route path="company/reservations" element={<CompanyReservationsPage />} />
           <Route path="company/employees" element={<EmployeeManagementPage />} />
           <Route path="company/maintenance" element={<MaintenancePage />} />
           <Route path="company/defects" element={<DefectsPage />} />
           <Route path="company/invoices" element={<InvoicesPage />} />
           <Route path="company/reports" element={<ReportsPage />} />
+          
+          {/* Platform Admin Routes */}
+          <Route path="platform-admin" element={<PlatformAdminDashboardPage />} />
         </Route>
       </Routes>
     </AuthProvider>

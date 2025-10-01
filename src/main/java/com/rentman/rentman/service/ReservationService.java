@@ -64,6 +64,7 @@ public class ReservationService {
         Reservation reservation = new Reservation();
         reservation.setCustomer(customer);
         reservation.setVehicle(vehicle);
+        reservation.setCompany(vehicle.getCompany()); // Set company from vehicle
         reservation.setStartDate(createDto.getStartDate());
         reservation.setEndDate(createDto.getEndDate());
         reservation.setPickupLocation(createDto.getPickupLocation());
@@ -233,7 +234,20 @@ public class ReservationService {
 
     // Get customer's reservations
     public List<Reservation> getCustomerReservations(Long customerId) {
-        return reservationRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        List<Reservation> reservations = reservationRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        // Trigger lazy loading for vehicle and company relationships
+        for (Reservation reservation : reservations) {
+            if (reservation.getVehicle() != null) {
+                reservation.getVehicle().getMake(); // Initialize vehicle proxy
+                if (reservation.getVehicle().getCompany() != null) {
+                    reservation.getVehicle().getCompany().getCompanyName(); // Initialize company proxy
+                }
+            }
+            if (reservation.getCompany() != null) {
+                reservation.getCompany().getCompanyName(); // Initialize company proxy
+            }
+        }
+        return reservations;
     }
 
     // Get vehicle's reservations

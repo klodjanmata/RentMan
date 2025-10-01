@@ -21,6 +21,10 @@ export const LoginPage: React.FC = () => {
     email: '',
     password: '',
   });
+  
+  // Get return URL from query params
+  const searchParams = new URLSearchParams(window.location.search);
+  const returnUrl = searchParams.get('returnUrl');
 
   const handleInputChange = (field: keyof LoginRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -34,11 +38,19 @@ export const LoginPage: React.FC = () => {
 
     try {
       const user = await login(formData);
-      // Redirect based on user role after successful login
-      if (user?.role === 'ADMIN' || user?.role === 'COMPANY_ADMIN' || user?.role === 'EMPLOYEE') {
-        navigate('/company/dashboard');
+      
+      // If there's a return URL, go there
+      if (returnUrl) {
+        navigate(returnUrl);
       } else {
-        navigate('/dashboard');
+        // Otherwise, redirect based on user role
+        if (user?.role === 'ADMIN') {
+          navigate('/platform-admin');
+        } else if (user?.role === 'COMPANY_ADMIN' || user?.role === 'EMPLOYEE') {
+          navigate('/company/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');

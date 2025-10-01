@@ -426,6 +426,18 @@ public class CompanyController {
     @GetMapping("/{id}/reservations")
     public ResponseEntity<List<Reservation>> getCompanyReservations(@PathVariable Long id) {
         List<Reservation> reservations = reservationRepository.findByCompanyIdOrderByCreatedAtDesc(id);
+        // Trigger lazy loading for relationships
+        for (Reservation reservation : reservations) {
+            if (reservation.getVehicle() != null) {
+                reservation.getVehicle().getMake();
+            }
+            if (reservation.getCustomer() != null) {
+                reservation.getCustomer().getFirstName();
+            }
+            if (reservation.getCompany() != null) {
+                reservation.getCompany().getCompanyName();
+            }
+        }
         return ResponseEntity.ok(reservations);
     }
 
