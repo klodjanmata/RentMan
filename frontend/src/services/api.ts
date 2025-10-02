@@ -68,6 +68,11 @@ class ApiService {
     await this.api.post('/auth/change-password', passwordData);
   }
 
+  async updateProfile(userId: number, profileData: any): Promise<User> {
+    const response: AxiosResponse<User> = await this.api.put(`/users/${userId}`, profileData);
+    return response.data;
+  }
+
   // Vehicle endpoints
   async searchVehicles(params: VehicleSearchParams): Promise<Vehicle[]> {
     const response: AxiosResponse<any> = await this.api.get('/search/vehicles', { params });
@@ -165,6 +170,7 @@ export const authApi = {
   logout: () => apiService.logout(),
   changePassword: (passwordData: { currentPassword: string; newPassword: string }) => 
     apiService.changePassword(passwordData),
+  updateProfile: (userId: number, profileData: any) => apiService.updateProfile(userId, profileData),
 };
 
 export const vehicleApi = {

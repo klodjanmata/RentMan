@@ -69,3 +69,20 @@ export interface AuthResponse {
   user: User;
   message?: string;
 }
+
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  driverLicenseNumber?: string;
+  licenseExpiryDate?: string;
+  streetAddress?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  preferredLanguage?: string;
+}

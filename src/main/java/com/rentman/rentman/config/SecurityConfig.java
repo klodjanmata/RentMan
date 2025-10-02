@@ -77,7 +77,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/companies/{id}/status").hasRole("ADMIN")
                 .requestMatchers("/api/companies/{id}/subscription").hasRole("ADMIN")
                 .requestMatchers("/api/companies").hasAnyRole("ADMIN", "COMPANY_ADMIN")
-                .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                
+                // User profile endpoints - allow users to update their own profile
+                .requestMatchers("/api/users/search").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                .requestMatchers("/api/users/statistics").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                .requestMatchers("/api/users/customers").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                .requestMatchers("/api/users/employees").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                .requestMatchers("/api/users/admins").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                .requestMatchers("/api/users/role/**").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                .requestMatchers("/api/users/{id}").authenticated()  // Allow any authenticated user
+                .requestMatchers("/api/users").hasAnyRole("ADMIN", "COMPANY_ADMIN")
+                
                 .requestMatchers("/api/companies/statistics/**").hasAnyRole("ADMIN", "COMPANY_ADMIN")
                 
                 // Company admin and employee endpoints

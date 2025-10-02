@@ -3,10 +3,13 @@ package com.rentman.rentman.controller;
 import com.rentman.rentman.dto.UserRegistrationDto;
 import com.rentman.rentman.entity.User;
 import com.rentman.rentman.service.UserService;
+import com.rentman.rentman.service.CustomUserDetailsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
@@ -124,14 +127,29 @@ public class UserController {
 
     // Update user
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         try {
-            User updatedUser = userService.updateUser(id, userDetails);
+            // Get current authenticated user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetailsService.CustomUserPrincipal principal = 
+                (CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
+            User currentUser = principal.getUser();
+            
+            // Check if user is updating their own profile OR is an admin/company admin
+            if (!currentUser.getId().equals(id) && 
+                currentUser.getRole() != User.UserRole.ADMIN && 
+                currentUser.getRole() != User.UserRole.COMPANY_ADMIN) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "You can only update your own profile");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+            
+            User updatedUser = userService.updateUserProfile(id, updates);
             return ResponseEntity.ok(updatedUser);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().body(error);
         }
     }
 

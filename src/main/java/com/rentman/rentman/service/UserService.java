@@ -9,8 +9,10 @@ import com.rentman.rentman.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -215,6 +217,66 @@ public class UserService {
             return userRepository.save(user);
         }
         throw new RuntimeException("User not found with id: " + id);
+    }
+
+    // Update user profile with Map
+    public User updateUserProfile(Long id, Map<String, Object> updates) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        // Update only the fields that are provided
+        if (updates.containsKey("firstName") && updates.get("firstName") != null) {
+            user.setFirstName((String) updates.get("firstName"));
+        }
+        if (updates.containsKey("lastName") && updates.get("lastName") != null) {
+            user.setLastName((String) updates.get("lastName"));
+        }
+        if (updates.containsKey("phoneNumber") && updates.get("phoneNumber") != null) {
+            user.setPhoneNumber((String) updates.get("phoneNumber"));
+        }
+        if (updates.containsKey("dateOfBirth") && updates.get("dateOfBirth") != null && !updates.get("dateOfBirth").toString().isEmpty()) {
+            try {
+                user.setDateOfBirth(LocalDate.parse((String) updates.get("dateOfBirth")));
+            } catch (Exception e) {
+                // Skip if date is invalid
+            }
+        }
+        if (updates.containsKey("driverLicenseNumber")) {
+            user.setDriverLicenseNumber((String) updates.get("driverLicenseNumber"));
+        }
+        if (updates.containsKey("licenseExpiryDate") && updates.get("licenseExpiryDate") != null && !updates.get("licenseExpiryDate").toString().isEmpty()) {
+            try {
+                user.setLicenseExpiryDate(LocalDate.parse((String) updates.get("licenseExpiryDate")));
+            } catch (Exception e) {
+                // Skip if date is invalid
+            }
+        }
+        if (updates.containsKey("streetAddress")) {
+            user.setStreetAddress((String) updates.get("streetAddress"));
+        }
+        if (updates.containsKey("city")) {
+            user.setCity((String) updates.get("city"));
+        }
+        if (updates.containsKey("state")) {
+            user.setState((String) updates.get("state"));
+        }
+        if (updates.containsKey("postalCode")) {
+            user.setPostalCode((String) updates.get("postalCode"));
+        }
+        if (updates.containsKey("country")) {
+            user.setCountry((String) updates.get("country"));
+        }
+        if (updates.containsKey("preferredLanguage")) {
+            user.setPreferredLanguage((String) updates.get("preferredLanguage"));
+        }
+        if (updates.containsKey("emailNotifications")) {
+            user.setEmailNotifications((Boolean) updates.get("emailNotifications"));
+        }
+        if (updates.containsKey("smsNotifications")) {
+            user.setSmsNotifications((Boolean) updates.get("smsNotifications"));
+        }
+
+        return userRepository.save(user);
     }
 
     // Update user status
